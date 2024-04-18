@@ -1,0 +1,104 @@
+
+
+# Scrapp paragraphs
+
+import requests
+from bs4 import BeautifulSoup
+
+def scrape_paragraphs_from_multiple_urls(urls):
+    all_paragraphs = []
+    for url in urls:
+        try:
+            # Fetch the HTML content of the web page
+            response = requests.get(url)
+            response.raise_for_status()  # Raise an exception for bad requests
+
+            # Parse the HTML using BeautifulSoup
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            # Find all paragraph elements
+            paragraphs = soup.find_all('p')
+
+            # Extract text from paragraph elements and add them to the list
+            paragraph_texts = [p.get_text() for p in paragraphs]
+            all_paragraphs.extend(paragraph_texts)
+        except Exception as e:
+            print(f"An error occurred while processing {url}: {e}")
+
+    return all_paragraphs
+
+# Example usage
+urls = ["  https://www.capetown.travel/claremont/"]  # Replace with the URLs you want to scrape
+paragraphs = scrape_paragraphs_from_multiple_urls(urls)
+
+# Print the paragraphs
+for i, paragraph in enumerate(paragraphs, start=1):
+    print(f"Paragraph {i}: {paragraph}")
+
+
+
+
+# Determine level of crime
+
+
+
+
+import nltk
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.corpus import stopwords
+from nltk.probability import FreqDist
+import spacy
+
+# Download NLTK resources
+nltk.download('punkt')
+nltk.download('stopwords')
+
+# Load English language model for SpaCy
+nlp = spacy.load("en_core_web_sm")
+
+# Function to check if a sentence contains crime-related keywords
+def contains_crime(sentence):
+    crime_keywords = ["crime", "criminal", "theft", "murder", "robbery", "assault", "fraud", "illegal", "arson", "burglary"]
+    for word in crime_keywords:
+        if word in sentence.lower():
+            return True
+    return False
+
+# Function to detect if a paragraph has a lot of crime-related content
+def detect_crime(paragraph):
+    sentences = sent_tokenize(paragraph)
+    crime_count = 0
+    for sentence in sentences:
+        if contains_crime(sentence):
+            crime_count += 1
+    if crime_count / len(sentences) > 0.2:  # Adjust the threshold as needed
+        return True
+    else:
+        return False
+
+
+# Example paragraph
+
+from googlesearch import search
+
+def get_google_links(query, num_results=10):
+    try:
+        # Perform the Google search
+        search_results = search(query)
+        
+        # Return the links
+        return search_results
+    except Exception as e:
+        print("An error occurred:", e)
+        return []
+
+# Example usage
+query = "is cape town claremont safe"
+num_results = 5  # Number of results you want to retrieve
+links = get_google_links(query, num_results)
+for i, link in enumerate(links, start=1):
+    print(f"{i}. {link}")
+
+
+
+
