@@ -1,87 +1,112 @@
 
 
-# Scrapp paragraphs
 
 import requests
 from bs4 import BeautifulSoup
+import time
 
 def scrape_paragraphs_from_multiple_urls(urls):
     all_paragraphs = []
+    # List of User-Agent strings to rotate
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
+        # Add more User-Agent strings as needed
+    ]
+    headers = {'User-Agent': ''}
+
+
+
     for url in urls:
         try:
+            print(url)
+            # Rotate User-Agent
+            headers['User-Agent'] = user_agents[len(all_paragraphs) % len(user_agents)]
+            
             # Fetch the HTML content of the web page
-            response = requests.get(url)
+            response = requests.get(url, headers=headers)
             response.raise_for_status()  # Raise an exception for bad requests
 
+            # Decode the content with the specified encoding, ignoring errors
+            content = response.content.decode('utf-8', errors='ignore')
+
             # Parse the HTML using BeautifulSoup
-            soup = BeautifulSoup(response.content, 'html.parser')
+            soup = BeautifulSoup(content, 'html.parser')
 
             # Find all paragraph elements
             paragraphs = soup.find_all('p')
 
             # Extract text from paragraph elements and add them to the list
-            paragraph_texts = [p.get_text() for p in paragraphs]
-            all_paragraphs.extend(paragraph_texts)
+            for paragraph in paragraphs:
+                paragraph_text = paragraph.get_text()
+                all_paragraphs.append(paragraph_text)
+
+            # Introduce a delay to avoid bombarding the server
+            time.sleep(1)  # Sleep for 1 second between requests
         except Exception as e:
-            print(f"An error occurred while processing {url}: {e}")
+            continue
 
-    return all_paragraphs
+         #  scrape_paragraphs_from_multiple_urls(urls)
+          # print(f"An error occurred while processing {url}: {e}")
 
+    #return all_paragraphs
+    key_paragraphs = []
+    for i, paragraph in enumerate(all_paragraphs, start=1):
+       strings = str(paragraph)
+       if "Delf" in strings:
+        key_paragraphs.append(strings)
+        contains_crime(key_paragraphs)
+        print(key_paragraphs)
+       # print(paragraph)
+      #elif "Delf" in paragraph:
+       # print(paragraph)
+     # print(f"Paragraph {i}: {paragraph}")
+
+ 
 # Example usage
-urls = ["  https://www.capetown.travel/claremont/"]  # Replace with the URLs you want to scrape
-paragraphs = scrape_paragraphs_from_multiple_urls(urls)
+urls = []
 
 # Print the paragraphs
-for i, paragraph in enumerate(paragraphs, start=1):
-    print(f"Paragraph {i}: {paragraph}")
 
 
 
-
-# Determine level of crime
-
-
-
-
-import nltk
-from nltk.tokenize import word_tokenize, sent_tokenize
-from nltk.corpus import stopwords
-from nltk.probability import FreqDist
 import spacy
 
-# Download NLTK resources
-nltk.download('punkt')
-nltk.download('stopwords')
-
-# Load English language model for SpaCy
+# Load English language model
 nlp = spacy.load("en_core_web_sm")
 
-# Function to check if a sentence contains crime-related keywords
-def contains_crime(sentence):
-    crime_keywords = ["crime", "criminal", "theft", "murder", "robbery", "assault", "fraud", "illegal", "arson", "burglary"]
-    for word in crime_keywords:
-        if word in sentence.lower():
+def contains_crime(text):
+    # Process the text using spaCy
+    doc = nlp(text)
+    
+    # Define a list of crime-related keywords
+    crime_keywords = ["crime", "criminal", "theft", "robbery", "assault", "murder", "fraud", "illegal", "violence"]
+    
+    # Check if any token in the document matches a crime keyword
+    for token in doc:
+        if token.text.lower() in crime_keywords:
             return True
     return False
 
-# Function to detect if a paragraph has a lot of crime-related content
-def detect_crime(paragraph):
-    sentences = sent_tokenize(paragraph)
-    crime_count = 0
-    for sentence in sentences:
-        if contains_crime(sentence):
-            crime_count += 1
-    if crime_count / len(sentences) > 0.2:  # Adjust the threshold as needed
-        return True
+# Define your paragraphs
+paragraphs = text
+
+# Check each paragraph for mentions of crime
+for i, paragraph in enumerate(paragraphs, 1):
+    if contains_crime(paragraph):
+        print(f"Paragraph {i} contains mentions of crime.")
     else:
-        return False
+        print(f"Paragraph {i} does not contain mentions of crime.")
 
 
-# Example paragraph
+
+
+
+
 
 from googlesearch import search
 
-def get_google_links(query, num_results=10):
+def get_google_links(query, num_results=10,country="ZA"):
     try:
         # Perform the Google search
         search_results = search(query)
@@ -93,11 +118,24 @@ def get_google_links(query, num_results=10):
         return []
 
 # Example usage
-query = "is cape town claremont safe"
+query ="is delf safe cape town"
 num_results = 5  # Number of results you want to retrieve
 links = get_google_links(query, num_results)
+count = 0
 for i, link in enumerate(links, start=1):
-    print(f"{i}. {link}")
+    count += 1
+    if count < 10:
+     urls.append(link)
+     print(f"{i}. {link}")
+    else:
+        
+        break
+
+#print(urls)
+scrape_paragraphs_from_multiple_urls(urls)
+
+
+
 
 
 
