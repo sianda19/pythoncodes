@@ -1,0 +1,14 @@
+import requests
+from bs4 import BeautifulSoup
+import time
+from googlesearch import search
+import random
+
+
+class CrimeChecker:
+    def __init__(self, place, province_or_state):
+        self.place = place
+        self.province_or_state = province_or_state
+        self.key_paragraphs = []
+
+  
